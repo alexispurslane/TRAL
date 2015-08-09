@@ -1,6 +1,16 @@
 #lang racket
-
-(define (make-finite-state-machine lst)
+(require (for-syntax racket/syntax))
+(provide make-fsm
+         run
+         commands
+         same-as
+         isame-as
+         icommands
+         run-inventory-action
+         parse
+         repl
+         room)
+(define (make-fsm lst)
   (define (hash-set-in ht ks v)
     (cond [(not (list? ks)) (error "ks not a list")]
           [(empty? (cdr ks)) (hash-set ht (car ks) v)]
@@ -32,6 +42,10 @@
                    "south"
                    "east"
                    "west"
+                   "northeast"
+                   "southeast"
+                   "northwest"
+                   "southwest"
                    "up"
                    "down"
                    "look"
@@ -39,38 +53,54 @@
                    "wait"
                    "again"
                    "quit"))
-
-(define icommands '("drop"
-                    "get"
-                    "inventory"))
-(define isame-as (hash "take" "get"
-                       "grab" "get"
-                       "throw" "drop"
-                       "i" "inventory"))
 (define same-as (hash
                  "z" "wait"
-                 "x" "examine"
                  "n" "north"
                  "s" "south"
                  "e" "east"
                  "w" "west"
+                 "ne" "northeast"
+                 "se" "southeast"
+                 "nw" "northwest"
+                 "sw" "southwest"
                  "u" "up"
                  "d" "down"
                  "l" "look"
                  "g" "again"))
 
+(define icommands '("drop"
+                    "get"
+                    "inventory"
+                    "examine"))
+(define isame-as (hash "take" "get"
+                       "grab" "get"
+                       "x" "examine"
+                       "throw" "drop"
+                       "i" "inventory"))
+
 (define (run-inventory-action c)
-  (define-values (verb noun prep noun2) (values
-                                         (first c)
-                                         (second c)
-                                         (third c)
-                                         (fourth c)))
-  verb)
+  (cond
+    [(= (length c) 2) ; VERB NOUN, i.e. GET LAMP
+     (define verb (first c))
+     (define noun (second c))
+     verb]
+    [(= (length c) 3) ; VERB NOUN NOUN, i.e. SWITCH LAMP ON
+     (define verb (first c))
+     (define noun (second c))
+     (define noun2 (third c))
+     verb]
+    [(= (length c) 4) ; VERB NOUN PRONOUN NOUN, i.e. PUT LAMP ON STOOL
+     (define verb (first c))
+     (define noun (second c))
+     (define prep (third c))
+     (define noun2 (fourth c))
+     verb]))
 
 (define (parse fsm current-state str)
   (define wic #f)
   (define input (string-split str))
-  (define command (if (and (not (member (first input) commands)) (not (equal? (first input) "begin")))
+  (define command (if (and (not (member (first input) commands))
+                           (not (equal? (first input) "begin")))
                       (hash-ref same-as (first input)
                                 (lambda ()
                                   (set! wic #t)
@@ -90,3 +120,12 @@
   (if (not (equal? res "quit"))
       (repl fsm res #f)
       (displayln "Bye!")))
+
+(define (room name desc objs)
+  (lambda (event state)
+    (lambda ()
+      (displayln name)
+      (displayln desc)
+      (for-each (lambda (obj)
+                  (displayln (string-append "You see a " obj " here.")))
+                objs))))
