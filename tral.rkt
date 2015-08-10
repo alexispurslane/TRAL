@@ -24,6 +24,10 @@
 				(cdr ks)
 				v))]))
 
+(define (hash-ref-in ht ks)
+  (foldl (lambda (k ht)
+	   (hash-ref ht k)) ht ks))
+
 (define (make-fsm lst) 
   (foldl (lambda (x fsm)
            (define-values (old event state action) (values (first x)
@@ -82,23 +86,8 @@
                        "throw" "drop"
                        "i" "inventory"))
 
-(define (run-inventory-action c state object-hash)
-  (cond
-   [(= (length c) 2) ; VERB NOUN, i.e. GET LAMP
-    (define verb (first c))
-    (define noun (second c))
-    verb]
-   [(= (length c) 3) ; VERB NOUN NOUN, i.e. SWITCH LAMP ON
-    (define verb (first c))
-    (define noun (second c))
-    (define noun2 (third c))
-    verb]
-   [(= (length c) 4) ; VERB NOUN PREPOSITION NOUN, i.e. PUT LAMP ON STOOL
-    (define verb (first c))
-    (define noun (second c))
-    (define prep (third c))
-    (define noun2 (fourth c))
-    verb]))
+(define (run-inventory-action c state [h (hash)])
+    ((hash-ref-in h c) state))
 
 (define (add-inventory-action action f [h (hash)])
   (hash-set-in h action (apply f action)))
@@ -107,7 +96,7 @@
   (foldl (lambda (a ht)
 	   (add-inventory-action (first a) (second a) ht)) h action-list))
 
-(define (parse fsm current-state str object-hash)
+(define (parse fsm current-state str [h (hash)])
   (define wic #f)
   (define input (string-split str))
   (define command (if (and (not (member (first input) commands))
@@ -123,7 +112,7 @@
    [(and (not (equal? command "quit")) (not wic))
     (run fsm command current-state)]
    [(and (not (equal? command "quit")) wic)
-    (run-inventory-action input current-state object-hash)]
+    (run-inventory-action input current-state h)]
    [(equal? command "quit") command]))
 
 (define (repl fsm [state "start"] [icommand "begin"] [object-hash (hash)])
