@@ -23,5 +23,5 @@
 		   (list "Entrance To Cave" "north" "Cave" room-cave)
 		   (list "start" "begin" "Entrance To Cave" room-entrance))))
 
-(repl main-fsm "start" "begin" actions)
+(repl main-fsm #:actions actions)
 
