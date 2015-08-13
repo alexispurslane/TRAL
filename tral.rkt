@@ -10,7 +10,8 @@
          parse
          repl
          room
-	 add-inventory-action)
+	 add-inventory-action
+	 add-inventory-actions)
 
 (define actions (hash))
 
@@ -80,6 +81,7 @@
                     "get"
                     "inventory"
                     "examine"))
+
 (define isame-as (hash "take" "get"
                        "grab" "get"
                        "x" "examine"
@@ -112,13 +114,13 @@
    [(and (not (equal? command "quit")) (not wic))
     (run fsm command current-state)]
    [(and (not (equal? command "quit")) wic)
-    (run-inventory-action input current-state h)]
+    (run-inventory-action  (cons command (rest input)) current-state h)]
    [(equal? command "quit") command]))
 
 (define (repl fsm [state "start"] [icommand "begin"] [object-hash (hash)])
   (define res (parse fsm state (or icommand (read-line)) object-hash))
   (if (not (equal? res "quit"))
-      (repl fsm res #f)
+      (repl fsm res #f object-hash)
       (displayln "Bye!")))
 
 (define (room name desc objs)
