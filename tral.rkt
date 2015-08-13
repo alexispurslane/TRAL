@@ -108,6 +108,7 @@
 
 (define (parse fsm current-state str [h (hash)])
   (define wic #f)
+  (define err #f)
   (define input (string-split str))
   (if (not (null? input))
       (let ()
@@ -117,15 +118,19 @@
 				      (lambda ()
 					(set! wic #t)
 					(if (not (member (first input) icommands))
-					    (hash-ref isame-as (first input))
+					    (hash-ref isame-as (first input) (lambda ()
+									       (displayln "What's that?")
+									       (set! err #t)))
 					    (first input))))
 			    (first input)))
 	(cond
+	 [err current-state]
 	 [(and (not (equal? command "quit")) (not wic))
 	  (run fsm command current-state)]
 	 [(and (not (equal? command "quit")) wic)
-	  (run-inventory-action  (cons command (rest input)) current-state h)]
-	 [(equal? command "quit") command]))
+	  (run-inventory-action (cons command (rest input)) current-state h)]
+	 [(equal? command "quit") command]
+	 ))
       current-state))
 
 (define (repl fsm #:state [state "start"] #:command [icommand "begin"] #:actions [object-hash (hash)])
