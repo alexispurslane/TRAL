@@ -1,0 +1,7 @@
+FIXME: There is a disconnect in the part of the parser that dispatches commands.
+       Basic commands not working. It might have something to do with inventory...
+TODO: IO is very slow.
+TODO: Add prompt.
+TODO: Make inventory actions less verbose.
+TODO: Automatically check object "get"s.
+TODO: Make an alternative room function that is more flexible. Call it custom-room or something.

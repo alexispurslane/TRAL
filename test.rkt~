@@ -1,0 +1,25 @@
+#lang racket
+(require "./tral.rkt")
+(define inventory '())
+(define actions (add-inventory-actions (list
+                                        (list (list "inventory" "list") (lambda (v n)
+                                                                          (lambda (state)
+                                                                            (displayln "You are carrying: ")
+                                                                            (for-each (lambda (item)
+                                                                                        (displayln (string-append
+                                                                                                    "\t"
+                                                                                                    item))) inventory))))
+                                        (list (list "get" "lamp") (lambda (v n)
+                                                                    (lambda (state)
+                                                                      (cond
+                                                                        [(equal? state "Entrance To Cave") "Taken."]
+                                                                        [else "You can't see any such thing."])))))))
+
+(define room-entrance (room "Entrance To Cave" "You are in a fairly open field. To your north, the ground opens into a cave." '(lamp)))
+(define room-cave (room "Darkness" "It's to dark to see a thing." '()))
+(define main-fsm (make-fsm
+                  (list
+                   (list "Cave" "south" "Entrance To Cave" room-entrance)
+                   (list "Entrance To Cave" "north" "Cave" room-cave)
+                   (list "start" "begin " "Entrance To Cave" room-entrance))))
+
