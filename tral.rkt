@@ -9,6 +9,9 @@
 	 run-inventory-action
 	 parse
 	 repl
+	 title
+	 desc
+	 name
 	 room
 	 add-inventory-action
 	 add-inventory-actions)
@@ -141,11 +144,17 @@
       (repl fsm #:state res #:command #f #:actions object-hash)
       (displayln "Bye!")))
 
+
+(define (wrap x) (lambda () x))
+(define desc wrap)
+(define name wrap)
+(define title wrap)
+
 (define (room name desc objs)
   (lambda (event state)
     (lambda ()
-      (displayln name)
-      (displayln desc)
+      (displayln (name))
+      (displayln (desc))
       (for-each (lambda (obj)
 		  (displayln (string-append "You see a " obj " here.")))
 		objs))))

@@ -14,8 +14,18 @@
 										   "Taken."]
 										  [else "You can't see any such thing."]))
 								      state))))))
-(define room-entrance (room "Entrance To Cave" "You are in a fairly open field. To your north, the ground opens into a cave." '("lamp")))
-(define room-cave (room "Darkness" "It's to dark to see a thing." '()))
+(define room-entrance (room (title "Entrance To Cave")
+			    (desc "You are in a fairly open field. To your north, the ground opens into a cave.")
+			    '("lamp")))
+(define room-cave (room (lambda ()
+			  (if (member "lamp" inventory)
+			      "Cave"
+			      "Darkness"))
+			(lambda ()
+			  (if (member "lamp" inventory)
+			      "A large, typical cave."
+			      "It's to dark to see in here. You are likely to be eaten by a grue."))
+			'()))
 
 (define main-fsm (make-fsm
 		  (list
