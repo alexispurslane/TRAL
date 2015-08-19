@@ -2,12 +2,19 @@
 (require (for-syntax racket/syntax))
 (provide make-fsm
 	 run
+	 say
+	 movement
+	 action
 	 commands
 	 same-as
 	 isame-as
 	 icommands
 	 run-inventory-action
 	 parse
+	 thing
+	 things
+	 pickup
+	 place-things
 	 repl
 	 title
 	 desc
@@ -38,7 +45,7 @@
 	(displayln "You can't do that."))
       res))
 
-(define (make-fsm lst)
+(define (make-fsm . lst)
   (foldl (lambda (x fsm)
 	   (define-values (old event state action) (values (first x)
 							   (second x)
@@ -107,7 +114,7 @@
 (define (add-inventory-action action f [h (hash)])
   (hash-set-in h action (apply f action)))
 
-(define (add-inventory-actions action-list [h (hash)])
+(define (add-inventory-actions [h (hash)] . action-list)
   (foldl (lambda (a ht)
 	   (add-inventory-action (first a) (second a) ht)) h action-list))
 
@@ -160,11 +167,40 @@
   (syntax-rules ()
     [(_ body ...) (lambda () body ...)]))
 
-(define (room name desc objs)
+(define (action . lst)
+  (if (not (eq? (length lst) 2))
+      (error "Expected two arguments: a list (the command), and a procedure.")
+      lst))
+(define (movement . lst)
+  (if (not (eq? (length lst) 4))
+      (error "Expected four arguments: a string, a string, another string, and a procedure.")
+      lst))
+(define say displayln)
+
+(define (room name desc [objs '()])
   (lambda (event state)
     (lambda ()
       (displayln (name))
-      (displayln (desc))
-      (for-each (lambda (obj)
-		  (displayln (string-append "You see a " obj " here.")))
-		objs))))
+      (displayln (desc)))))
+
+(define (thing name state [places (hash)])
+  (define old (hash-ref places state '()))
+  (hash-set places state (cons name old)))
+
+(define (things objs state [places (hash)])
+  (foldl (lambda (obj places)
+	   (thing obj state places)) places objs))
+
+(define (hash-extend src dst)
+  (foldl (lambda (k h)
+	   (hash-set h k (hash-ref src k))) dst (hash-keys src)))
+
+(define (place-things . obj-objs)
+  (foldl (lambda (h hs)
+	   (hash-extend h hs)) (hash) obj-objs))
+
+(define (pickup obj state [places (hash)] [inventory '()])
+  (if (member obj (hash-ref places state '()))
+      (begin (displayln "Taken.")
+	     (cons obj inventory))
+      (display "You can't see any such thing.")))

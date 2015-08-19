@@ -1,0 +1,9 @@
+#lang racket
+(provide
+ new-inventory
+ pickup
+ drop
+ has)
+
+(define (new-inventory . initial-items)
+  initial-items)
