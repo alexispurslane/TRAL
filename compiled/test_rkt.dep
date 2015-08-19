@@ -1,0 +1,1 @@
+("6.2" ("9ca40a93150ea0e177711f05ee348d66553709b3" . "7adb97574400dd9f5025fe4211a76b1742cfb31f") #"/Users/christopherdumas/TRAL/./tral.rkt" (collects #"racket" #"runtime-config.rkt") (collects #"racket" #"main.rkt"))

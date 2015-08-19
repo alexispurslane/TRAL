@@ -38,7 +38,7 @@
 	(displayln "You can't do that."))
       res))
 
-(define (make-fsm lst) 
+(define (make-fsm lst)
   (foldl (lambda (x fsm)
 	   (define-values (old event state action) (values (first x)
 							   (second x)
@@ -52,7 +52,9 @@
 			      "action" (action event state))))
 	 (hash) lst))
 (define (run fsm command state)
-  (define s (hash-ref (hash-ref fsm state) command))
+  (define s (hash-ref (hash-ref fsm state (hash)) command (hash "state" state
+								"action" (lambda ()
+									     (displayln "You can't go that way!")))))
   ((hash-ref s "action" (lambda ()
 			  (lambda ()
 			    (displayln "What's that?")))))
@@ -145,10 +147,18 @@
       (displayln "Bye!")))
 
 
-(define (wrap x) (lambda () x))
-(define desc wrap)
-(define name wrap)
-(define title wrap)
+(define-syntax wrap
+  (syntax-rules ()
+    [(_ body ...) (lambda () body ...)]))
+(define-syntax name
+  (syntax-rules ()
+    [(_ body ...) (lambda () body ...)]))
+(define-syntax title
+  (syntax-rules ()
+    [(_ body ...) (lambda () body ...)]))
+(define-syntax desc
+  (syntax-rules ()
+    [(_ body ...) (lambda () body ...)]))
 
 (define (room name desc objs)
   (lambda (event state)
