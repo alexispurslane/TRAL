@@ -109,7 +109,8 @@
 		       "i" "inventory"))
 
 (define (run-inventory-action c state [h (hash)])
-  ((hash-ref-in h c) state))
+  ((hash-ref-in h c) state)
+  state)
 
 (define (add-inventory-action action f [h (hash)])
   (hash-set-in h action (apply f action)))
@@ -141,8 +142,7 @@
 	  (run fsm command current-state)]
 	 [(and (not (equal? command "quit")) wic)
 	  (run-inventory-action (cons command (rest input)) current-state h)]
-	 [(equal? command "quit") command]
-	 ))
+	 [(equal? command "quit") command]))
       current-state))
 
 (define (repl fsm #:state [state "start"] #:command [icommand "begin"] #:actions [object-hash (hash)])
