@@ -3,17 +3,24 @@
 (define inventory '())
 (define thing-places (place-things
 		      (things '("lamp") "Entrance To Cave")))
+
 (define actions (add-inventory-actions (hash)
 				       (action '("inventory") (lambda (v)
 								(lambda (state)
 								  (say inventory)
 								  state)))
+				       (action '("drop" "lamp") (lambda (v n)
+								  (lambda (state)
+								    (set! inventory
+									  (drop-item n state thing-places inventory)))))
 				       (action '("get" "lamp") (lambda (v n)
 								 (lambda (state)
-								   (set! inventory (pickup n state thing-places inventory)))))))
+								   (set! inventory
+									 (pickup-item n state thing-places inventory)))))))
+
 (define room-entrance (room (title "Entrance To Cave")
-			    (desc "You are in a fairly open field. To your north, the ground opens into a cave.")
-			    '("lamp")))
+			    (desc "You are in a fairly open field. To your north, the ground opens into a cave. You can see a small brass lamp here.")))
+
 (define room-cave (room (title
 			 (if (member "lamp" inventory)
 			     "Cave"

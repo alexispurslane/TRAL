@@ -2,6 +2,7 @@
 (require (for-syntax racket/syntax))
 (provide make-fsm
 	 run
+	 drop-item
 	 say
 	 movement
 	 action
@@ -13,7 +14,7 @@
 	 parse
 	 thing
 	 things
-	 pickup
+	 pickup-item
 	 place-things
 	 repl
 	 title
@@ -177,7 +178,7 @@
       lst))
 (define say displayln)
 
-(define (room name desc [objs '()])
+(define (room name desc)
   (lambda (event state)
     (lambda ()
       (displayln (name))
@@ -199,8 +200,15 @@
   (foldl (lambda (h hs)
 	   (hash-extend h hs)) (hash) obj-objs))
 
-(define (pickup obj state [places (hash)] [inventory '()])
+(define (pickup-item obj state [places (hash)] [inventory '()])
   (if (member obj (hash-ref places state '()))
       (begin (displayln "Taken.")
 	     (cons obj inventory))
-      (display "You can't see any such thing.")))
+      (displayln "You can't see any such thing.")))
+
+(define (drop-item obj state [places (hash)] [inventory '()])
+  (if (member obj inventory)
+      (begin
+	(displayln "Dropped.")
+	(remove obj inventory))
+      (displayln "You don't have that!")))
