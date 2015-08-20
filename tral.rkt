@@ -62,7 +62,7 @@
 (define (run fsm command state)
   (define s (hash-ref (hash-ref fsm state (hash)) command (hash "state" state
 								"action" (lambda ()
-									     (displayln "You can't go that way!")))))
+									   (displayln "You can't go that way!")))))
   ((hash-ref s "action" (lambda ()
 			  (lambda ()
 			    (displayln "What's that?")))))
@@ -201,14 +201,16 @@
 	   (hash-extend h hs)) (hash) obj-objs))
 
 (define (pickup-item obj state [places (hash)] [inventory '()])
-  (if (member obj (hash-ref places state '()))
+  (if (and (member obj (hash-ref places state '())) (not (member obj inventory)))
       (begin (displayln "Taken.")
 	     (cons obj inventory))
-      (displayln "You can't see any such thing.")))
+      (begin (displayln "You can't see any such thing.")
+	     inventory)))
 
 (define (drop-item obj state [places (hash)] [inventory '()])
+  (displayln inventory)
   (if (member obj inventory)
-      (begin
-	(displayln "Dropped.")
-	(remove obj inventory))
-      (displayln "You don't have that!")))
+      (begin (displayln "Dropped.")
+	     (remove obj inventory))
+      (begin (displayln "You don't have that!")
+	     inventory)))
