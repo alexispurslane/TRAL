@@ -38,9 +38,11 @@
 
 (define (hash-ref-in ht ks)
   (define res (foldl (lambda (k ht)
-		       (if ht
+		       (if (hash? ht)
 			   (hash-ref ht k #f)
-			   #f)) ht ks))
+			   (if ht
+			       ht
+			       #f))) ht ks))
   (if (not res)
       (lambda ([v ""] [n ""])
 	(displayln "You can't do that."))
@@ -110,11 +112,11 @@
 		       "i" "inventory"))
 
 (define (run-inventory-action c state [h (hash)])
-  ((hash-ref-in h c) state)
+  ((apply (hash-ref-in h c) c) state)
   state)
 
 (define (add-inventory-action action f [h (hash)])
-  (hash-set-in h action (apply f action)))
+  (hash-set-in h action f))
 
 (define (add-inventory-actions [h (hash)] . action-list)
   (foldl (lambda (a ht)
@@ -171,7 +173,7 @@
 (define (action . lst)
   (if (not (eq? (length lst) 2))
       (error "Expected two arguments: a list (the command), and a procedure.")
-      lst))
+      (cons (remove* '(_) (first lst)) (rest lst))))
 (define (movement . lst)
   (if (not (eq? (length lst) 4))
       (error "Expected four arguments: a string, a string, another string, and a procedure.")
@@ -208,7 +210,6 @@
 	     inventory)))
 
 (define (drop-item obj state [places (hash)] [inventory '()])
-  (displayln inventory)
   (if (member obj inventory)
       (begin (displayln "Dropped.")
 	     (remove obj inventory))

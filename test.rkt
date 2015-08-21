@@ -9,11 +9,11 @@
 								(lambda (state)
 								  (say inventory)
 								  state)))
-				       (action '("drop" "lamp") (lambda (v n)
+				       (action '("drop" _) (lambda (v n)
 								  (lambda (state)
 								    (set! inventory
 									  (drop-item n state thing-places inventory)))))
-				       (action '("get" "lamp") (lambda (v n)
+				       (action '("get" _) (lambda (v n)
 								 (lambda (state)
 								   (set! inventory
 									 (pickup-item n state thing-places inventory)))))))
