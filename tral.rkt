@@ -111,7 +111,7 @@
 		       "throw" "drop"
 		       "i" "inventory"))
 
-(define (run-inventory-action c state [h (hash)])
+(define (run-inventory-action c state [h (hash)] [all-objects '()])
   ((apply (hash-ref-in h c) c) state)
   state)
 
@@ -122,7 +122,7 @@
   (foldl (lambda (a ht)
 	   (add-inventory-action (first a) (second a) ht)) h action-list))
 
-(define (parse fsm current-state str [h (hash)])
+(define (parse fsm current-state str [h (hash)] [ao '()])
   (define wic #f)
   (define err #f)
   (define input (string-split str))
@@ -144,14 +144,14 @@
 	 [(and (not (equal? command "quit")) (not wic))
 	  (run fsm command current-state)]
 	 [(and (not (equal? command "quit")) wic)
-	  (run-inventory-action (cons command (rest input)) current-state h)]
+	  (run-inventory-action (cons command (rest input)) current-state h ao)]
 	 [(equal? command "quit") command]))
       current-state))
 
-(define (repl fsm #:state [state "start"] #:command [icommand "begin"] #:actions [object-hash (hash)])
+(define (repl fsm #:state [state "start"] #:command [icommand "begin"] #:actions [object-hash (hash)] #:object-list [ao '()])
   (define res (parse fsm state (or icommand ((lambda ()
 					       (display "> ")
-					       (read-line)))) object-hash))
+					       (read-line)))) object-hash ao))
   (if (not (equal? res "quit"))
       (repl fsm #:state res #:command #f #:actions object-hash)
       (displayln "Bye!")))
@@ -199,8 +199,9 @@
 	   (hash-set h k (hash-ref src k))) dst (hash-keys src)))
 
 (define (place-things . obj-objs)
-  (foldl (lambda (h hs)
-	   (hash-extend h hs)) (hash) obj-objs))
+  (values (foldl (lambda (h hs)
+		   (hash-extend h hs)) (hash) obj-objs)
+	  (flatten (map hash-values obj-objs))))
 
 (define (pickup-item obj state [places (hash)] [inventory '()])
   (if (and (member obj (hash-ref places state '())) (not (member obj inventory)))
